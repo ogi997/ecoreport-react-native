@@ -13,12 +13,12 @@
     },
     "plugins": [
       [
-        "expo-media-library",
+        "expo-location",
         {
-          "photosPermission": "Allow $(PRODUCT_NAME) to access your photo",
-          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos",
-          "isAccessMediaLocationEnabled": "true"
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
+
+
       ]
     ],
     "assetBundlePatterns": [

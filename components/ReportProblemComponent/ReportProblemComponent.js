@@ -6,6 +6,9 @@ import {shareAsync} from "expo-sharing";
 import * as MediaLibrary from 'expo-media-library';
 import {useNavigation} from "@react-navigation/native";
 import CameraComponent from "../CameraComponent/CameraComponent";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import GetLocationProblemComponent from "../GetLocationProblemComponent/GetLocationProblemComponent";
+import * as Location from 'expo-location';
 
 const dummyData = [
     {key:'1', value:'Mobiles'},
@@ -18,20 +21,35 @@ const dummyData = [
 ]
 const ReportProblemComponent = () => {
 
-    const [hasPermission, setHasPermission] = useState(false);
-    const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState();
 
+    const [hasPermission, setHasPermission] = useState(false);
+    const [hasPermissionMap, setHasPermissionMap] = useState(false);
+
+    const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState();
+    const [myLocation, setMyLocation] = useState();
+
+
+    //za slanje na server
     const [title, setTitle] = useState("");
     const [note, setNote] = useState("");
     const [location, setLocation] = useState("");
     const [image, setImage] = useState("");
     const [errorType, setErrorType] = useState("");
 
-
-    const reportProblemHandle = () => {
+    const reportProblemHandle = async () => {
         console.log("click");
 
         console.log("slika", image);
+
+        try {
+            const value = await AsyncStorage.getItem('coords');
+            if (value !== null) {
+                // We have data!!
+                console.log("cords",value);
+            }
+        } catch (error) {
+            // Error retrieving data
+        }
     };
     const nav = useNavigation()
     const takePictureHandle = async () => {
@@ -47,6 +65,15 @@ const ReportProblemComponent = () => {
         // setHasCameraPermission(cameraPermission === "granted");
         // setHasMediaLibraryPermission(mediaLibraryPermission === "granted");
     };
+
+    const getLocationButton = async () => {
+        // console.log("aaa")
+        nav.navigate("GetLocation");
+        // setHasPermissionMap(true);
+        // setHasPermission(false);
+
+
+    }
 
     const validateForm = () => {
         return (title.length === 0 || note.length === 0)
@@ -78,7 +105,10 @@ const ReportProblemComponent = () => {
                     <View style={{
                         marginTop: 5
                     }}>
-                        <Button title={"Location"} />
+                        <Button
+                            title={"Location"}
+                            onPress={getLocationButton}
+                        />
                     </View>
 
                     <View style={{
@@ -114,7 +144,6 @@ const ReportProblemComponent = () => {
 
 
             </View> : <CameraComponent setHasPermission={setHasPermission} setImage={setImage}/>}
-
         </>
     );
 }

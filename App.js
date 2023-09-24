@@ -7,6 +7,7 @@ import HomeScreen from "./screens/HomeScreen/HomeScreen";
 import {NavigationContainer} from "@react-navigation/native";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import CameraComponent from "./components/CameraComponent/CameraComponent";
+import GetLocationProblemComponent from "./components/GetLocationProblemComponent/GetLocationProblemComponent";
 
 const Stack = createNativeStackNavigator();
 
@@ -23,7 +24,8 @@ export default function App() {
                   <Stack.Screen name="Registration" component={RegistrationScreen} />
                   <Stack.Screen name="ReportProblem" component={ReportProblemScreen} />
                   <Stack.Screen name="Map" component={MapScreen} />
-                  {/*<Stack.Screen name={"Camera"} component={CameraComponent} />*/}
+                  <Stack.Screen name={"GetLocation"} component={GetLocationProblemComponent} />
+                  <Stack.Screen name={"Camera"} component={CameraComponent} />
               </Stack.Navigator>
           </NavigationContainer>
       </>

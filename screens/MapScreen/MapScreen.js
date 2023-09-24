@@ -5,7 +5,7 @@ import MapComponent from "../../components/MapComponent/MapComponent";
 const MapScreen = () => {
     return (
       <>
-            <Text>MapPage</Text>
+            {/*<Text>MapPage</Text>*/}
             <MapComponent />
       </>
     );
