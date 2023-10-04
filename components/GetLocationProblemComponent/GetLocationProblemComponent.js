@@ -1,10 +1,10 @@
-import {Button, Image, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View} from "react-native";
+import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {Button} from 'react-native-paper';
 import {useNavigation} from "@react-navigation/native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapView, {Marker} from "react-native-maps";
 import {useEffect, useState} from "react";
 import * as Location from "expo-location";
-
 
 const GetLocationProblemComponent = () => {
     const [myLocation, setMyLocation] = useState();
@@ -13,10 +13,9 @@ const GetLocationProblemComponent = () => {
 
     useEffect(() => {
         (async () => {
-            const permission =  await Location.requestForegroundPermissionsAsync();
+            const permission = await Location.requestForegroundPermissionsAsync();
 
             if (permission.status !== "granted") {
-                console.log("neki modal da ne moze dalje");
                 return;
             }
             const currentLocation = await Location.getCurrentPositionAsync({});
@@ -31,7 +30,7 @@ const GetLocationProblemComponent = () => {
             setDraggableMarker(saveLocation);
 
             const reverse = await Location.reverseGeocodeAsync(saveLocation);
-            setAddress(reverse[0].street + " " + reverse[0].city + " " + reverse[0].region + " " + reverse[0].country);
+            setAddress(createAddress(reverse));
         })();
     }, []);
 
@@ -40,14 +39,23 @@ const GetLocationProblemComponent = () => {
         nav.goBack();
     };
 
+    const createAddress = (reverse) => {
+        let dataToReturn;
+
+        const street = reverse[0].street !== null ? reverse[0].street + ", " : "";
+        const city = reverse[0].city !== null ? reverse[0].city + ", " : "";
+        const region = reverse[0].region !== null ? reverse[0].region + ", " : "";
+        const country = reverse[0].country !== null ? reverse[0].country : "";
+
+        dataToReturn = street + city + region + country;
+
+        return dataToReturn;
+    }
+
     const getGeolocationAddress = async (e) => {
         setDraggableMarker(e.nativeEvent.coordinate);
         const reverse = await Location.reverseGeocodeAsync(e.nativeEvent.coordinate);
-        // const data = JSON.stringify(reverse);
-        // const dataToSave
-        // console.log("REZULTAT", JSON.stringify(reverse));
-        setAddress(reverse[0].street + " " + reverse[0].city + " " + reverse[0].region + " " + reverse[0].country);
-
+        setAddress(createAddress(reverse));
     };
 
     const acceptAndGoBackHandle = async () => {
@@ -57,59 +65,55 @@ const GetLocationProblemComponent = () => {
                 JSON.stringify(draggableMarker),
             );
 
-            console.log("RES@", res);
         } catch (error) {
-            console.log("AAA")
+            console.error("AAA")
         }
 
         nav.goBack();
     }
 
-
     return (
-      <>
-          <View style={styles.container}>
-              {myLocation && <MapView
-                  style={styles.mapContainer}
-                  mapType={"terrain"}
-                  showsUserLocation={true}
-                  initialRegion={myLocation}
-                  showsMyLocationButton={false}
-                  loadingEnabled={true}
-                  rotateEnabled={false}
-              >
-
-
-                  <Marker
-                      draggable
-                      coordinate={draggableMarker}
-                      // onDragEnd={(e) => setDraggableMarker(e.nativeEvent.coordinate)}
-                      onDragEnd={getGeolocationAddress}
-                      // onDragStart={dragStarted}
-
-                      onPress={(e) => console.log("CLick", e)}
-                      // isPreselected={true}
-                  />
-              </MapView>}
-          </View>
+        <>
+            <View style={styles.container}>
+                {myLocation && <MapView
+                    style={styles.mapContainer}
+                    mapType={"terrain"}
+                    showsUserLocation={true}
+                    initialRegion={myLocation}
+                    showsMyLocationButton={false}
+                    loadingEnabled={true}
+                    rotateEnabled={false}
+                    onPress={getGeolocationAddress}
+                >
+                    <Marker
+                        draggable
+                        coordinate={draggableMarker}
+                        onDragEnd={getGeolocationAddress}
+                    />
+                </MapView>}
+            </View>
 
             <View style={styles.goBackButton}>
                 <TouchableOpacity onPress={getBack}>
-                <Image style={styles.imageStyle} source={require("../../assets/images/back.png")} />
+                    <Image style={styles.imageStyle} source={require("../../assets/images/back.png")}/>
                 </TouchableOpacity>
-                    {/*<Button title={"Back"} onPress={getBack} />*/}
-                {/*<Text onPress={getBack}></Text>*/}
             </View>
 
-          <View style={styles.acceptButton}>
-              <Button onPress={acceptAndGoBackHandle} title={"Accept"} />
-          </View>
+            <View style={styles.acceptButton}>
+                <Button
+                    icon={require("../../assets/images/unblock.png")}
+                    mode={"contained"}
+                    onPress={acceptAndGoBackHandle}
+                >
+                    Accept
+                </Button>
+            </View>
 
 
-          <View style={styles.informationContainer}>
+            <View style={styles.informationContainer}>
                 <Text>Address: {address}</Text>
-          </View>
-      </>
+            </View>
+        </>
     );
 }
 
@@ -128,21 +132,11 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: '3%',
         left: '7%',
-        // padding: 20,
-        // backgroundColor: '#fff'
-        // top: '3%',
-        // left: '5%',
-        // borderRadius: '99px',
-        // backgroundColor: "#fff",
-        // padding: 10,
     },
     imageStyle: {
         width: 30,
         height: 30,
-        // padding: 20,
-        // margin: 20,
         resizeMode: 'contain',
-        // backgroundColor: '#fff',
     },
     informationContainer: {
         position: 'absolute',
@@ -151,10 +145,7 @@ const styles = StyleSheet.create({
         padding: 30,
         opacity: 0.7,
         maxWidth: "100%",
-        // width: 100,
-        // height: '200px',
         backgroundColor: '#fff',
-        // borderColor: '#000',
     },
     acceptButton: {
         position: 'absolute',

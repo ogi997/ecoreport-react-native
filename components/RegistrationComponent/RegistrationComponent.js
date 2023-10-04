@@ -1,92 +1,93 @@
-import {Text, StyleSheet, View, SafeAreaView, TextInput, Button} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {useState} from "react";
-import { SelectList } from 'react-native-dropdown-select-list'
+import {Button, TextInput} from 'react-native-paper';
+import {useDispatch, useSelector} from "react-redux";
+import {register} from "../../redux-store/userSlice";
+import {showToast} from "../../utils/utils";
+import {useNavigation} from "@react-navigation/native";
+import Colors from '../../Colors';
 
-const dummyData = [
-    {key:'1', value:'Mobiles'},
-    {key:'2', value:'Appliances'},
-    {key:'3', value:'Cameras'},
-    {key:'4', value:'Computers'},
-    {key:'5', value:'Vegetables'},
-    {key:'6', value:'Diary Products'},
-    {key:'7', value:'Drinks'},
-]
 const RegistrationComponent = () => {
     const [firstname, setFirstname] = useState("");
     const [lastname, setLastname] = useState("");
     const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [selected, setSelected] = useState("");
+    const nav = useNavigation();
+    const dispatch = useDispatch();
+    const {loading} = useSelector((state) => state.users);
 
+    const registrationHandle = async () => {
 
-    const registrationHandle = () => {
-        console.log("click");
-
-        console.log(selected);
+        const response = await dispatch(register({firstname, lastname, username, email, password}));
+        if (response.error) {
+            if (response.error.message === "400") {
+                showToast("Username/email must be unique.");
+                return;
+            }
+            showToast("There is some problem with registration.");
+            return;
+        }
+        showToast("You have successfully register");
+        nav.goBack();
     };
 
     const validateForm = () => {
-      return (username.length === 0 || password.length === 0 || firstname.length === 0 || lastname.length === 0)
+        return (username.length === 0 || password.length === 0 || firstname.length === 0 || lastname.length === 0)
     };
 
     return (
         <>
             <View style={{
-                justifyContent: 'center',
                 alignItems: 'center',
-                height: '100%',
-                width: '100%',
             }}>
-                <SafeAreaView>
-                    <Text>Firstname:</Text>
+                <View>
                     <TextInput
+                        label={"Firstname"}
                         style={styles.input}
                         placeholder={"Enter your firstname"}
                         onChangeText={setFirstname}
                     />
 
-                    <Text>Lastname:</Text>
                     <TextInput
+                        label={"Lastname"}
                         style={styles.input}
                         placeholder={"Enter your Lastname"}
                         onChangeText={setLastname}
                     />
 
-                    <Text>Username:</Text>
                     <TextInput
+                        label={"Username"}
                         style={styles.input}
                         placeholder={"Enter your Username"}
                         onChangeText={setUsername}
                     />
 
-                    <Text>Password:</Text>
                     <TextInput
+                        label={"Email"}
+                        style={styles.input}
+                        placeholder={"Enter your email"}
+                        onChangeText={setEmail}
+                    />
+
+                    <TextInput
+                        label={"Password"}
+                        secureTextEntry={true}
                         style={styles.input}
                         placeholder={"Enter your password"}
                         onChangeText={setPassword}
                     />
 
-                    <View
-                        style={{
-                            marginTop: 10
-                        }}
-                    >
-                        <SelectList
-                            setSelected={(val) => setSelected(val)}
-                            data={dummyData}
-                            save="key"
-                        />
-                    </View>
-
-
                     <View style={{margin: 10}}>
                         <Button
-                            title={"Registration"}
+                            loading={loading}
+                            icon={require("../../assets/images/register.png")}
+                            mode={"contained"}
                             onPress={registrationHandle}
                             disabled={validateForm()}
-                        />
+                        > Register </Button>
                     </View>
-                </SafeAreaView>
+                </View>
             </View>
 
         </>
@@ -95,12 +96,14 @@ const RegistrationComponent = () => {
 
 const styles = StyleSheet.create({
     input: {
-        height: 40,
-        //width: '100%',
-        // margin: 12,
-        borderWidth: 1,
-        padding: 10,
+        backgroundColor: Colors.PRIMARY_COLOR,
+        width: 300,
     },
+    loadingContainer: {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+    }
 });
 
 export default RegistrationComponent;

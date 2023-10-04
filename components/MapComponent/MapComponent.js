@@ -1,39 +1,62 @@
-import {Text, View, StyleSheet, Button} from "react-native";
+import {ActivityIndicator, StyleSheet, View} from "react-native";
 import MapView, {Marker} from "react-native-maps";
-import {useState, useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
 import * as Location from "expo-location";
 import MapMenuComponent from "../MapMenuComponent/MapMenuComponent";
+import {useDispatch, useSelector} from "react-redux";
+import {status} from "../../redux-store/userSlice";
+import {clearData, getDataOffline, getMapDataNotLogged, getMapLogged} from "../../redux-store/mapSlice";
+import {useNavigation} from "@react-navigation/native";
+
 const MapComponent = () => {
 
-    const dummyData = [
-        {
-            id: 100,
-            title: "First marker",
-            location: {
-                latitude: 44.7730739524215,
-                longitude: 17.183029389279035,
-            },
-            description: "My first marker"
-        },
-        {
-             id: 101,
-            title: "First marker",
-            location: {
-                latitude: 44.770880381838595,
-                longitude: 17.195903992844205,
-            },
-            description: "My first marker"
-        }
-    ]
     const mapRef = useRef();
     const [myLocation, setMyLocation] = useState();
+    const [edit, setEdit] = useState(false);
+    const {authenticated} = useSelector((state) => state.users);
+    const {data, loading} = useSelector((state) => state.map);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        const getData = async () => {
+
+            if (authenticated) {
+                logged()
+            } else {
+                notLogged();
+            }
+
+
+        };
+        dispatch(status());
+        getData();
+
+        return () => {
+            dispatch(clearData());
+        }
+
+    }, []);
+
+    const notLogged = async () => {
+        const result = await dispatch(getMapDataNotLogged());
+
+        if (result.error) {
+            await dispatch(getDataOffline());
+        }
+    }
+
+    const logged = async () => {
+        const result = await dispatch(getMapLogged());
+        if (result.error) {
+            await dispatch(getDataOffline());
+        }
+    }
 
     useEffect(() => {
         (async () => {
-            const permission =  await Location.requestForegroundPermissionsAsync();
+            const permission = await Location.requestForegroundPermissionsAsync();
 
             if (permission.status !== "granted") {
-                console.log("neki modal da ne moze dalje");
                 return;
             }
             const currentLocation = await Location.getCurrentPositionAsync({});
@@ -48,9 +71,15 @@ const MapComponent = () => {
 
     }, []);
 
+    const nav = useNavigation();
+    const markerPressHandle = (e) => {
+        if (!edit) return;
+
+        nav.navigate("OpenReport", {state: {reportID: e.nativeEvent.id, disabledSave: false}});
+    }
+
     const showMarkers = () => {
-        return dummyData.map((item, index) => {
-            // console.log(item.id)
+        return data.map((item, index) => {
             return (
                 <Marker
                     key={index}
@@ -58,7 +87,7 @@ const MapComponent = () => {
                     title={item.title}
                     description={item.description}
                     identifier={item.id.toString()}
-                    onPress={(e) => console.log(e.nativeEvent.id)}
+                    onPress={markerPressHandle}
                 />
             )
         })
@@ -69,7 +98,7 @@ const MapComponent = () => {
 
             <View style={styles.container}>
 
-                {myLocation && <MapView
+                {(myLocation && !loading) && <MapView
                     ref={mapRef}
                     style={styles.mapContainer}
                     mapType={"terrain"}
@@ -79,12 +108,12 @@ const MapComponent = () => {
                     loadingEnabled={true}
                     rotateEnabled={false}
                 >
-                    {showMarkers()}
+                    {!loading ? showMarkers() : <ActivityIndicator size={"large"}/>}
                 </MapView>}
 
-                <View style={styles.menuContainer}>
-                    <MapMenuComponent mapRef={mapRef} />
-                </View>
+                {authenticated && <View style={styles.menuContainer}>
+                    <MapMenuComponent mapRef={mapRef} edit={edit} setEdit={setEdit}/>
+                </View>}
             </View>
 
         </>
@@ -105,10 +134,10 @@ const styles = StyleSheet.create({
     menuContainer: {
         position: 'absolute',
         top: '3%',
-        left: '25%',
+        left: '15%',
         backgroundColor: '#fff',
         padding: 10,
-        width: '50%'
+        width: '70%'
     }
 });
 

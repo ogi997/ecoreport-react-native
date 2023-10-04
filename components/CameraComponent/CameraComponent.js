@@ -1,36 +1,49 @@
-import {Camera} from "expo-camera";
-import {Button, StyleSheet, View, ActivityIndicator} from "react-native";
+import {Camera, CameraType} from "expo-camera";
+import {StyleSheet, View} from "react-native";
+import {ActivityIndicator, IconButton} from 'react-native-paper';
 import {useRef, useState} from "react";
+import {savePhoto} from "../../redux-store/cameraSlice";
+import {useDispatch} from "react-redux";
+import {useNavigation} from "@react-navigation/native";
 
+const CameraComponent = () => {
 
-const CameraComponent = ({setHasPermission, setImage}) => {
     let cameraRef = useRef();
     const [loading, setLoading] = useState(false);
+    const dispatch = useDispatch();
+    const nav = useNavigation();
+
     const takePic = async () => {
         setLoading(true);
         let options = {
             quality: 1,
             base64: true,
-            exif: false
+            exif: false,
         };
+
         let newPhoto = await cameraRef.current.takePictureAsync(options);
-        setHasPermission(false);
-        setImage(newPhoto.base64);
-        setLoading(false);
-        // console.log("aaa",newPhoto);
+        dispatch(savePhoto({newPhoto}));
+        nav.goBack();
     }
     return (
         <>
             <View style={styles.loadingContainer}>
 
-                <ActivityIndicator animating={loading} size="large" />
+                <ActivityIndicator animating={loading} size="large"/>
             </View>
-        <Camera style={styles.container} ref={cameraRef}>
-            <View style={styles.buttonContainer}>
-                <Button title={"Take a pic"}  onPress={takePic} />
-            </View>
-        </Camera>
-            </>
+            <Camera style={styles.container} ref={cameraRef} type={CameraType.back}>
+                <View style={styles.buttonContainer}>
+                    <IconButton
+                        disabled={loading}
+                        mode={"contained"}
+                        icon={require("../../assets/images/camera.png")}
+                        size={50}
+                        onPress={takePic}
+                    />
+
+                </View>
+            </Camera>
+        </>
     );
 }
 
@@ -41,16 +54,19 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     buttonContainer: {
-        backgroundColor: "#fff",
+        position: 'absolute',
+        bottom: '5%',
+        right: '40%',
+        // backgroundColor: "#fff",
         alignSelf: 'flex-end',
     },
     loadingContainer: {
-      zIndex: 999,
+        zIndex: 999,
         position: 'absolute',
         top: '50%',
         left: '50%',
-      margin: 0,
-      padding: 0,
+        margin: 0,
+        padding: 0,
     },
     loading: {
         position: "absolute",
