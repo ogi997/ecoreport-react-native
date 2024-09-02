@@ -13,9 +13,7 @@
 ----
 	Mobilna aplikacija koja koristi 'https://github.com/ogi997/ecoreport-django' kao backend server
 
-<p>
-	Mobilna aplikacija koristi custom serversku aplikaciju koja se nalazi na sljedecem linku: https://github.com/ogi997/ecoreport-django
-</p>
+
 <p>
 	<b>NAPOMENA:</b>
 	Gore navedeni opis ne opisuje sve funkcionalnosti koje su realizovane unutar mobilne aplikacije.
